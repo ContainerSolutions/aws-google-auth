@@ -200,11 +200,17 @@ class GoogleAuth:
         data_key = response_page.find('div', {'data-api-key': True}).get('data-api-key')
         data_tx_id = response_page.find('div', {'data-tx-id': True}).get('data-tx-id')
 
+        try:
+            prompt_number = response_page.find('div', {'class': 'swI1Tc'}).decode_contents()
+            prompt_message = "Tap 'Yes' on the Google prompt, then tap '{}' on your phone to sign in...".format(prompt_number)
+        except AttributeError:
+            prompt_message = "Open the Google App, and tap 'Yes' on the prompt to sign in ..."
+
         # Need to post this to the verification/pause endpoint
         await_url = "https://content.googleapis.com/cryptauth/v1/authzen/awaittx?alt=json&key=%s" % data_key
         await_body = {'txId': data_tx_id}
 
-        print("Open the Google App, and tap 'Yes' on the prompt to sign in ...")
+        print(prompt_message)
 
         self.session.headers['Referer'] = sess.url
         response = self.session.post(await_url, json=await_body)
